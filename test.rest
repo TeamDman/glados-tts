@@ -1,0 +1,9 @@
+
+GET http://localhost:8124/synthesize/howdy
+
+###
+
+POST http://localhost:8124/synthesize
+Content-Type: text/plain
+
+howdy

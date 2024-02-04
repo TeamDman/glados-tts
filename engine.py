@@ -39,13 +39,13 @@ if __name__ == "__main__":
 	
 	app = Flask(__name__)
 
-	@app.route('/synthesize/', defaults={'text': ''})
-	@app.route('/synthesize/<path:text>')
-	def synthesize(text):
-		if(text == ''): return 'No input'
-		
-		line = urllib.parse.unquote(request.url[request.url.find('synthesize/')+11:])
-		filename = "GLaDOS-tts-"+line.replace(" ", "-")
+	@app.route('/synthesize', methods=['POST'])
+	def synthesize():
+		text = request.data.decode('utf-8')  # Decode the request body directly as text
+		if not text:
+			return 'No input', 400  # Return a 400 Bad Request error if no text is provided
+
+		filename = "GLaDOS-tts-"+text.replace(" ", "-")
 		filename = filename.replace("!", "")
 		filename = filename.replace("°c", "degrees celcius")
 		filename = filename.replace(",", "")+".wav"
@@ -61,11 +61,11 @@ if __name__ == "__main__":
 			
 		# Generate New Sample
 		key = str(time.time())[7:]
-		if(glados_tts(line, key)):
+		if(glados_tts(text, key)):
 			tempfile = os.getcwd()+'/audio/GLaDOS-tts-temp-output-'+key+'.wav'
 						
 			# If the line isn't too long, store in cache
-			if(len(line) < 200 and CACHE):
+			if(len(text) < 200 and CACHE):
 				shutil.move(tempfile, file)
 			else:
 				return send_file(tempfile)
