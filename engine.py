@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.insert(0, os.getcwd()+'/glados_tts')
+import re
 
 import torch
 from utils.tools import prepare_text
@@ -23,6 +24,9 @@ def glados_tts(text, key=False, alpha=1.0):
 	glados.run_tts(text, alpha).export(output_file, format = "wav")
 	return True
 
+def sanitize_filename(text):
+    sanitized = re.sub(r'[^a-zA-Z0-9\-_\.]', '', text)  # Keep only alphanumeric, dashes, underscores, and dots
+    return sanitized
 
 # If the script is run directly, assume remote engine
 if __name__ == "__main__":
@@ -39,17 +43,18 @@ if __name__ == "__main__":
 	
 	app = Flask(__name__)
 
+	@app.route("/")
+	def index():
+		return "GLaDOS TTS Engine"
+
 	@app.route('/synthesize', methods=['POST'])
 	def synthesize():
 		text = request.data.decode('utf-8')  # Decode the request body directly as text
 		if not text:
 			return 'No input', 400  # Return a 400 Bad Request error if no text is provided
 
-		filename = "GLaDOS-tts-"+text.replace(" ", "-")
-		filename = filename.replace("!", "")
-		filename = filename.replace("°c", "degrees celcius")
-		filename = filename.replace(",", "")+".wav"
-		file = os.getcwd()+'/audio/'+filename
+		filename_sanitized = "GLaDOS-tts-" + sanitize_filename(text.replace(" ", "-")) + ".wav"
+		file = os.getcwd() + '/audio/' + filename_sanitized
 		
 		# Check for Local Cache
 		if(os.path.isfile(file)):
