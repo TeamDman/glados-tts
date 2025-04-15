@@ -1,3 +1,8 @@
+# https://github.com/bootphon/phonemizer/issues/44
+from phonemizer.backend.espeak.wrapper import EspeakWrapper
+_ESPEAK_LIBRARY = 'C:\Program Files\eSpeak NG\libespeak-ng.dll'
+EspeakWrapper.set_library(_ESPEAK_LIBRARY)
+
 import torch
 from utils.tools import prepare_text
 from scipy.io.wavfile import write
